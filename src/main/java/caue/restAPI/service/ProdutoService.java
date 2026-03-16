@@ -37,7 +37,15 @@ public class ProdutoService {
             p.setPreco(dados.getPreco());
             p.setDescricao(dados.getDescricao());
             p.setQuantidade(dados.getQuantidade());
-            return repository.save(p);         
+            return repository.save(p);           
         });
     }
+    
+    public boolean deletar(Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return true;
+        }
+        return false;
+    };
 }
