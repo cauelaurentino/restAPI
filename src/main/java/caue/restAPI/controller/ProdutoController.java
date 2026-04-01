@@ -9,9 +9,12 @@ import caue.restAPI.service.ProdutoService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +29,6 @@ public class ProdutoController {
     private ProdutoService service;
     
     // Endpoint 1: Listar Todos
-    
     @GetMapping //Identifica como uma requisição GET sem nome proprio (/produtos)
     public ResponseEntity<List<Produto>> listarTodos() { // identifica a devolução de um protocolo http com uma lista de produtos dentro, tudo isso com o nome listarTodos()
         List<Produto> produtos = service.listarTodos(); // chama o metodo listar todos que fizemos no ProdutoService.java e atribui em uma variavel do tipo List<Produtos>
@@ -34,13 +36,20 @@ public class ProdutoController {
     }
     
     // Endpoint 2: Buscar por id
-    
-    @GetMapping("/{id}") // Identifica como GET com o endereço produto/{id} 
-    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) { // identifica a devolução de um protocolo http com um Produto dentro, tudo isso com o nome buscarPorId e recebendo o Long id como parametro associado com o PathVariable que torna ele uma variavel, possibilitando a busca por esse numero
-        return service.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/{id}") // Identifica como uma requisição GET que, em seguida, recebera um valor determinado como "id"
+    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) { // Um objeto Produto que virá com algum codigo de status (ResponseEntity) e será encontrado pelo id que esta sendo puxado do valor digitado na requisição GET pelo @PathVariable
+        return service.buscarPorId(id) // Enviando esse id para o metodo que criamos no ProdutoService, e lá ele irá realizar a busca pelo id
+                .map(ResponseEntity::ok) // A partir do resultado da busca ele envia um código, assim como esperado pelo ResponseEntity: se der certo será 200 OK
+                .orElse(ResponseEntity.notFound().build()); // Se a busca der errado o código será 404 Not Found
     }
+    
+    //Endpoint 3: Criar novo produto
+    @PostMapping // Identifica como post (criar / envio de dados)
+    public ResponseEntity<Produto> criar(@RequestBody Produto produto) { // Um objeto Produto que virá com algum codigo de status (ResponseEntity) e será criado a partir do recebimento de um JSON que será puxado pelo RequestBody e transformado em um objeto de nome produto e de tipo Produto        
+        Produto salvo = service.salvar(produto); // Cria uma variavcel salvo do tipo Produto que tem como valor o produto sendo salvo pelo ProdutoService (Para que o novo produto receba o id correto pelo banco)
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo); // Retorna o objeto salvo com o status 201 Created
+    }
+    
     
     
 }
