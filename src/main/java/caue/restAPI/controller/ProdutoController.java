@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,6 +52,25 @@ public class ProdutoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo); // Retorna o objeto salvo com o status 201 Created
     }
     
+    //Endpoint 4: Atualizar um produto
+    @PutMapping("/{id}") // Identifica requisicoes do tipo PUT, ideais para atualizações
+    public ResponseEntity<Produto> atualizar( // Indica que irá devolver um objeto produto junto com um codigo de status
+        @PathVariable Long id, // Como primeiro parâmetro temos o responsável por pegar o id digitado no endereço
+        @RequestBody Produto produto){ // Como segundo parâmetro temos o responsável por pegar o JSON que recebemos pelo endereço e encaixa-lo no objeto Produto
+            return service.atualizar(id, produto) // retornamos a função atualizar lá do service, enviando o id que queremos mudar e o novo produto
+                    .map(ResponseEntity::ok) // Se der certo retorna 200OK
+                    .orElse(ResponseEntity.notFound().build()); // Caso de errado retorna 404 Not Found
+    }
     
+    @DeleteMapping("/{id}") // Identifica uma requisição de deletar
+    public ResponseEntity<Void> deletar(@PathVariable Long id) { // Retorna somente o código de status, sem produto porque esse metodo é de deletar então não tem o que retornar, e pega o id digitado no endereço como parâmetro
+        if (service.deletar(id)) { // No service temos o metodo deletar que confere se o id existe, se sim o deleta e retorna true, nesse if, o código de dentro só é executado se o resultado do metodo deletar do service for true
+            return ResponseEntity.noContent().build(); // Como o produto ja foi deletado no service, ele retorna somente o codigo de status 204 No Content
+        }
+        return ResponseEntity.notFound().build(); // Caso contrário, se a resposta do if do service for false e o codigo nem passar pelo if aimca, é sinal que o id nao foi encontrado, então ele retorna 404 Not Found
+    }
     
 }
+    
+
+    
